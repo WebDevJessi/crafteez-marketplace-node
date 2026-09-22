@@ -5,19 +5,23 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "insert-data": "tsx src/insert-data.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "prisma skills sync || exit 0"
   },
   "prisma": {
-  "seed": "ts-node prisma/seed.ts"
-},
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-mariadb": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "cors": "^2.8.6",
+    "dotenv": "^18.0.3",
     "express": "^5.2.1",
+    "mariadb": "^3.5.4",
     "mysql2": "^3.24.2"
   },
   "devDependencies": {
@@ -25,6 +29,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
     "prisma": "^7.10.0",
+    "tsx": "^4.20.6",
     "typescript": "^7.0.2"
   }
 }
