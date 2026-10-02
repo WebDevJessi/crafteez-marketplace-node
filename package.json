@@ -1,10 +1,11 @@
 {
+  "type": "module",
   "name": "crafteez-marketplace-node",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "start": "node index.js",
+    "start": "node index.ts",
     "insert-data": "tsx src/insert-data.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "prisma skills sync || exit 0"

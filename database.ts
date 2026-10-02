@@ -3,7 +3,7 @@ import mysql from 'mysql2';
 // Create the connection configuration
 export const connection = mysql.createConnection({
   host: 'localhost',         // Your database host (usually localhost)
-  user: 'root',              // Your MySQL default username
+  user: 'root',        // Your MySQL default username
   password: '', // Replace with your actual MySQL root password
   database: 'crafteezmarketplace_db'     // The exact schema name you created in Step 1
 });
