@@ -23,7 +23,8 @@
     "dotenv": "^18.0.3",
     "express": "^5.2.1",
     "mariadb": "^3.5.4",
-    "mysql2": "^3.24.2"
+    "mysql2": "^3.24.2",
+    "stripe": "^23.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

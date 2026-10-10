@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import prisma from './prisma.ts';
+import Stripe from 'stripe';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5001);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 // Enable CORS so the Angular app (running on a different port) can access this API
 app.use(cors({
