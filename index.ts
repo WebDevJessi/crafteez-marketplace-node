@@ -6,6 +6,7 @@ import Stripe from 'stripe';
 const app = express();
 const PORT = Number(process.env.PORT ?? 5001);
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const DOMAIN = 'http://localhost:4200'; 
 
 // Enable CORS so the Angular app (running on a different port) can access this API
 app.use(cors({
@@ -38,6 +39,37 @@ app.get('/api/products', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 })
+
+app.post("/create-checkout-session", async (req, res) => {
+  const session = await stripe.checkout.sessions.create({
+
+    ui_mode: "elements",
+    line_items: [
+      {
+        // Provide the exact Price ID (for example, price_1234) of the product you want to sell
+        price: "{{PRICE_ID}}",
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    return_url: `${DOMAIN}/complete.html?session_id={CHECKOUT_SESSION_ID}`,
+  });
+
+  res.send({ clientSecret: session.client_secret });
+});
+
+app.get("/session-status", async (req, res) => {
+  const session = await stripe.checkout.sessions.retrieve(req.query.session_id, {expand: ["payment_intent", "subscription"]});
+
+   res.send({
+    status: session.status,
+    payment_status: session.payment_status,
+    payment_intent_id: session.payment_intent?.id,
+    payment_intent_status: session.payment_intent?.status,
+    subscription_id: session.payment_intent ? null : session.subscription?.id,
+    subscription_status: session.payment_intent ? null : session.subscription?.status
+  });
+});
 
 // Start the server
 app.listen(PORT, () => {
