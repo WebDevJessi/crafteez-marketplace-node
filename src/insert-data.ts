@@ -94,6 +94,66 @@ async function main() {
       },
       categoryId: 1,
     },
+        {
+      name: 'Paint Journal',
+      slug: 'paint-journal',
+      isAvailable: true,
+      price: 17,
+      extras: {
+        width: 168,
+        height: 109,
+        energy: 'Class C+',
+      },
+      pictures: {
+        'journal.jpg': '/assets/journal.jpg',
+      },
+      categoryId: 1,
+    },
+    {
+      name: 'Washi Tape',
+      slug: 'washi-tape',
+      isAvailable: true,
+      price: 34,
+      extras: {
+        width: 168,
+        height: 109,
+        energy: 'Class C+',
+      },
+      pictures: {
+        'washi-tape3.jpg': '/assets/washi-tape3.jpg',
+      },
+      categoryId: 1,
+    },
+    {
+      name: 'Paint Brush Set',
+      slug: 'paint-brush-set',
+      isAvailable: true,
+      price: 12,
+      extras: {
+        width: 168,
+        height: 109,
+        energy: 'Class C+',
+      },
+      pictures: {
+        'paint-brush.jpg': '/assets/paint-brush.jpg',
+      },
+      categoryId: 1,
+    },
+    {
+      name: 'Knitting Essentials Kit',
+      slug: 'knitting-essentials-kit',
+      isAvailable: true,
+      price: 32,
+      extras: {
+        width: 168,
+        height: 109,
+        energy: 'Class C+',
+      },
+      pictures: {
+        'knitting-essentials.png': '/assets/knitting-essentials.png',
+      },
+      categoryId: 1,
+    },
   ],
   skipDuplicates: true,
   });

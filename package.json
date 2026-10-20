@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "node index.ts",
+    "start": "tsx index.ts",
     "insert-data": "tsx src/insert-data.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "prisma skills sync || exit 0"
