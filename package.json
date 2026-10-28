@@ -6,8 +6,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "tsx index.ts",
-    "insert-data": "tsx src/insert-data.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "insert-data": "tsx src/run-insert-data.ts",
+    "test": "node --import tsx --experimental-test-coverage --test src/insert-data.test.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
   "prisma": {
