@@ -4,7 +4,12 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 dotenv.config({ path: './prisma/.env' });
 
-const databaseUrl = new URL(process.env.DATABASE_URL as string);
+const databaseUrlValue = process.env.DATABASE_URL;
+if (!databaseUrlValue) {
+	throw new Error('DATABASE_URL environment variable is required');
+}
+
+const databaseUrl = new URL(databaseUrlValue);
 const adapter = new PrismaMariaDb({
 	host: databaseUrl.hostname,
 	port: Number(databaseUrl.port || 3306),

@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../prisma.ts';
 
 async function main() {
   await prisma.category.createMany({
@@ -16,5 +14,8 @@ async function main() {
 }
 
 main()
-  .catch(console.error)
+  .catch((error) => {
+    console.error('Failed to seed database:', error);
+    process.exitCode = 1;
+  })
   .finally(() => prisma.$disconnect());

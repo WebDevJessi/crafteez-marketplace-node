@@ -5,13 +5,34 @@ import Stripe from 'stripe';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5001);
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-const DOMAIN = 'http://localhost:4200'; 
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:4200';
 
-// Enable CORS so the Angular app (running on a different port) can access this API
-app.use(cors({
-  origin: 'http://localhost:4200' // The Angular development server URL
-}));
+if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+  throw new Error('PORT must be a valid port number');
+}
+if (!STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY environment variable is required');
+}
+if (!STRIPE_PRICE_ID) {
+  throw new Error('STRIPE_PRICE_ID environment variable is required');
+}
+if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
+  throw new Error('FRONTEND_URL environment variable is required in production');
+}
+
+const stripe = new Stripe(STRIPE_SECRET_KEY);
+const frontend = new URL(FRONTEND_URL);
+if (!['http:', 'https:'].includes(frontend.protocol)) {
+  throw new Error('FRONTEND_URL must use HTTP or HTTPS');
+}
+if (process.env.NODE_ENV === 'production' && frontend.protocol !== 'https:') {
+  throw new Error('FRONTEND_URL must use HTTPS in production');
+}
+const frontendOrigin = frontend.origin;
+
+app.use(cors({ origin: frontendOrigin }));
 
 // Parse incoming JSON requests
 app.use(express.json());
@@ -40,38 +61,49 @@ app.get('/api/products', async (req, res) => {
   }
 })
 
-app.post("/create-checkout-session", async (req, res) => {
-  const session = await stripe.checkout.sessions.create({
+app.post('/create-checkout-session', async (_req, res) => {
+  try {
+    const session = await stripe.checkout.sessions.create({
+      ui_mode: 'elements',
+      line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
+      mode: 'payment',
+      return_url: `${frontendOrigin}/complete.html?session_id={CHECKOUT_SESSION_ID}`,
+    });
 
-    ui_mode: "elements",
-    line_items: [
-      {
-        // Provide the exact Price ID (for example, price_1234) of the product you want to sell
-        price: "{{PRICE_ID}}",
-        quantity: 1,
-      },
-    ],
-    mode: 'payment',
-    return_url: `${DOMAIN}/complete.html?session_id={CHECKOUT_SESSION_ID}`,
-  });
-
-  res.send({ clientSecret: session.client_secret });
+    res.json({ clientSecret: session.client_secret });
+  } catch (error) {
+    console.error('Failed to create checkout session:', error);
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
 });
 
-app.get("/session-status", async (req, res) => {
-  const session = await stripe.checkout.sessions.retrieve(req.query.session_id, {expand: ["payment_intent", "subscription"]});
+app.get('/session-status', async (req, res) => {
+  const sessionId = req.query.session_id;
+  if (typeof sessionId !== 'string' || sessionId.length === 0) {
+    res.status(400).json({ error: 'A valid session_id is required' });
+    return;
+  }
 
-   res.send({
-    status: session.status,
-    payment_status: session.payment_status,
-    payment_intent_id: session.payment_intent?.id,
-    payment_intent_status: session.payment_intent?.status,
-    subscription_id: session.payment_intent ? null : session.subscription?.id,
-    subscription_status: session.payment_intent ? null : session.subscription?.status
-  });
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['payment_intent', 'subscription'],
+    });
+
+    res.json({
+      status: session.status,
+      payment_status: session.payment_status,
+      payment_intent_id: session.payment_intent?.id,
+      payment_intent_status: session.payment_intent?.status,
+      subscription_id: session.payment_intent ? null : session.subscription?.id,
+      subscription_status: session.payment_intent ? null : session.subscription?.status,
+    });
+  } catch (error) {
+    console.error('Failed to retrieve checkout session:', error);
+    res.status(500).json({ error: 'Failed to retrieve checkout session' });
+  }
 });
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is listening on port ${PORT}`);
 });
