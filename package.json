@@ -10,7 +10,7 @@
     "migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "insert-data": "tsx src/run-insert-data.ts",
-    "test": "node --import tsx --experimental-test-coverage --test src/insert-data.test.ts",
+    "test": "node --import tsx --experimental-test-coverage --test src/insert-data.test.ts src/app/checkout/checkout.test.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
   "engines": {

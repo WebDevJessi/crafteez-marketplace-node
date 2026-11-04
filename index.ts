@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import prisma from './prisma.ts';
 import Stripe from 'stripe';
+import { buildStripeLineItems, parseCheckoutItems } from './src/app/checkout/checkout.ts';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5001);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID;
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:4200';
 
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
@@ -14,9 +14,6 @@ if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
 }
 if (!STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY environment variable is required');
-}
-if (!STRIPE_PRICE_ID) {
-  throw new Error('STRIPE_PRICE_ID environment variable is required');
 }
 if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
   throw new Error('FRONTEND_URL environment variable is required in production');
@@ -61,11 +58,32 @@ app.get('/api/products', async (req, res) => {
   }
 })
 
-app.post('/create-checkout-session', async (_req, res) => {
+app.post('/create-checkout-session', async (req, res) => {
+  const items = parseCheckoutItems(req.body);
+  if (!items) {
+    res.status(400).json({
+      error: 'Provide a non-empty items array with positive productId and quantity values',
+    });
+    return;
+  }
+
   try {
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: items.map(({ productId }) => productId) },
+        isAvailable: true,
+      },
+      select: { id: true, name: true, price: true },
+    });
+    const lineItems = buildStripeLineItems(items, products);
+    if (!lineItems) {
+      res.status(400).json({ error: 'One or more products are unavailable' });
+      return;
+    }
+
     const session = await stripe.checkout.sessions.create({
       ui_mode: 'elements',
-      line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
+      line_items: lineItems,
       mode: 'payment',
       return_url: `${frontendOrigin}/complete.html?session_id={CHECKOUT_SESSION_ID}`,
     });
