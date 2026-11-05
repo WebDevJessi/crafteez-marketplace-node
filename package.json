@@ -9,7 +9,11 @@
     "build": "prisma generate",
     "migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "insert-data": "tsx src/run-insert-data.ts",
+    "insert-data": "tsx src/run-insert-data.ts local",
+    "insert-data:local": "tsx src/run-insert-data.ts local",
+    "insert-data:production": "tsx src/run-insert-data.ts production",
+    "update:product-descriptions:local": "tsx src/run-update-product-descriptions.ts local",
+    "update:product-descriptions:production": "tsx src/run-update-product-descriptions.ts production",
     "test": "node --import tsx --experimental-test-coverage --test src/insert-data.test.ts src/app/checkout/checkout.test.ts",
     "postinstall": "prisma skills sync || exit 0"
   },
