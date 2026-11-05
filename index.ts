@@ -106,14 +106,28 @@ app.get('/session-status', async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['payment_intent', 'subscription'],
     });
+    const paymentIntent = session.payment_intent;
+    const subscription = session.subscription;
+    const hasPaymentIntent = Boolean(paymentIntent);
 
     res.json({
       status: session.status,
       payment_status: session.payment_status,
-      payment_intent_id: session.payment_intent?.id,
-      payment_intent_status: session.payment_intent?.status,
-      subscription_id: session.payment_intent ? null : session.subscription?.id,
-      subscription_status: session.payment_intent ? null : session.subscription?.status,
+      payment_intent_id:
+        typeof paymentIntent === 'string' ? paymentIntent : paymentIntent?.id,
+      payment_intent_status:
+        typeof paymentIntent === 'object' && paymentIntent !== null
+          ? paymentIntent.status
+          : undefined,
+      subscription_id: hasPaymentIntent
+        ? null
+        : typeof subscription === 'string'
+          ? subscription
+          : subscription?.id,
+      subscription_status:
+        !hasPaymentIntent && typeof subscription === 'object' && subscription !== null
+          ? subscription.status
+          : undefined,
     });
   } catch (error) {
     console.error('Failed to retrieve checkout session:', error);
